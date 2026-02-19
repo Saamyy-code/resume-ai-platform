@@ -4,7 +4,7 @@ const groq = new Groq({
   apiKey: process.env.GROQ_API_KEY,
 });
 
-async function analyzeResume(text) {
+async function analyzeResume(text, jobDescription = "") {
   try {
     const completion = await groq.chat.completions.create({
       model: "llama-3.1-8b-instant",
@@ -12,16 +12,20 @@ async function analyzeResume(text) {
         {
           role: "system",
           content:
-            "You are an expert resume analyzer. Return ONLY valid JSON.",
+            "You are an expert ATS resume analyzer. Return ONLY valid JSON.",
         },
         {
           role: "user",
           content: `
-Analyze this resume and return JSON in this exact format:
+You are an ATS (Applicant Tracking System) resume analyzer.
+
+Analyze the RESUME against the JOB DESCRIPTION.
+
+Return ONLY valid JSON in this format:
 
 {
   "match_score": number,
-  "summary": "short summary",
+  "summary": "short professional summary",
   "strengths": ["point1","point2"],
   "missing_skills": ["skill1","skill2"],
   "improvement_suggestions": ["suggestion1","suggestion2"]
@@ -29,11 +33,16 @@ Analyze this resume and return JSON in this exact format:
 
 Rules:
 - match_score must be between 0 and 100
-- return ONLY JSON
-- no explanations outside JSON
+- Compare resume skills with job description
+- Identify missing skills required by the job
+- Give actionable suggestions
+- Return ONLY JSON (no explanations)
 
-Resume:
+RESUME:
 ${text}
+
+JOB DESCRIPTION:
+${jobDescription || "No job description provided. Give general evaluation."}
 `,
         },
       ],
@@ -49,6 +58,7 @@ ${text}
     console.error("AI ERROR:", err.message);
 
     return {
+      match_score: 0,
       summary: "AI analysis unavailable.",
       strengths: [],
       missing_skills: [],

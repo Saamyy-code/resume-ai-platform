@@ -17,10 +17,11 @@ const upload = multer({ storage });
 
 router.post("/upload", upload.single("resume"), async (req, res) => {
   try {
-    // 1️⃣ Extract text from PDF
+    const jobDescription = req.body.jobDescription || "";
+    // Extract text from PDF
     const text = await extractTextFromPDF(req.file.path);
 
-    // 2️⃣ Save raw resume to PostgreSQL
+    // Save raw resume to PostgreSQL
     const result = await pool.query(
       `INSERT INTO resumes (original_file_name, extracted_text)
        VALUES ($1, $2)
@@ -32,7 +33,7 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
     let savedResume = null; // ⭐ important fix
 
     try {
-      analysis = await analyzeResume(text);
+      analysis = await analyzeResume(text, jobDescription);
 
       // Save AI result to MongoDB
       const Resume = require("../models/Resume");
