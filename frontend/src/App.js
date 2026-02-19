@@ -5,6 +5,7 @@ function App() {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [resumehistory, setResumeHistory] = useState([]);
+  const [jobDescription, setJobDescription] = useState("");
   const analysisRef = useRef(null);
 
   const fetchHistory = async () => {
@@ -28,6 +29,8 @@ function App() {
 
     const formData = new FormData();
     formData.append("resume", file);
+    formData.append("jobDescription", jobDescription);
+
 
     try {
       setLoading(true);
@@ -79,6 +82,21 @@ function App() {
         type="file"
         accept=".pdf"
         onChange={(e) => setFile(e.target.files[0])}
+      />
+      <br /><br />
+
+      <textarea
+        placeholder="Paste Job Description here..."
+        value={jobDescription}
+        onChange={(e) => setJobDescription(e.target.value)}
+        rows={6}
+        style={{
+          width: "100%",
+          padding: "10px",
+          borderRadius: "8px",
+          border: "1px solid #ccc",
+          fontFamily: "Arial",
+        }}
       />
 
       <br />
@@ -189,6 +207,7 @@ function App() {
           </div>
         </div>
       )}
+
       {/* ================= HISTORY ================= */}
 {resumehistory.length > 0 && (
   <div style={{ marginTop: "40px" }}>
