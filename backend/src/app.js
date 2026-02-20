@@ -1,5 +1,4 @@
 const express = require("express");
-const cors = require("cors");
 const pool = require("./db");
 const mongoose = require("mongoose");
 const resumeRoutes = require("./routes/resumeRoutes");
@@ -15,7 +14,16 @@ mongoose
 
 const app = express();
 
-app.use(cors());
+const cors = require("cors");
+app.use(
+  cors({
+    origin: [
+      "http://localhost:3000",
+      "https://resume-ai-platform-ten.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 // Mount routes
