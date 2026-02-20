@@ -4,26 +4,38 @@ function App() {
   const [file, setFile] = useState(null);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
-  const [resumehistory, setResumeHistory] = useState([]);
-  const [jobDescription, setJobDescription] = useState("");
+  const [resumeHistory, setResumeHistory] = useState([]);
   const analysisRef = useRef(null);
+  const [jobDescription, setJobDescription] = useState("");
+  const [jdFile, setJdFile] = useState(null);
 
+  /* ================= FETCH HISTORY ================= */
   const fetchHistory = async () => {
-  try {
-    const response = await fetch(
-      "http://localhost:5000/api/resumes/history"
-    );
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/resumes/history"
+      );
+      const data = await response.json();
+      setResumeHistory(data);
+    } catch (err) {
+      console.error("Failed to fetch history:", err);
+    }
+  };
 
-    const data = await response.json();
-    setResumeHistory(data);
-  } catch (err) {
-    console.error("Failed to fetch history:", err);
-  }
-};
-    useEffect(() => {
-      fetchHistory();
-    }, []);
+  useEffect(() => {
+    fetchHistory();
+  }, []);
+  
+  useEffect(() => {
+    if(result && analysisRef.current) {
+      analysisRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+    }
+  }, [result]);
 
+  /* ================= UPLOAD ================= */
   const handleUpload = async () => {
     if (!file) return;
 
@@ -31,6 +43,9 @@ function App() {
     formData.append("resume", file);
     formData.append("jobDescription", jobDescription);
 
+    if(jdFile){
+      formData.append("jdFile, jdFile");
+    }
 
     try {
       setLoading(true);
@@ -44,7 +59,10 @@ function App() {
       );
 
       const data = await response.json();
+
       setResult(data);
+
+      // refresh history after upload
       fetchHistory();
     } catch (error) {
       console.error(error);
@@ -54,7 +72,7 @@ function App() {
     }
   };
 
-  // Card UI style
+  /* ================= UI STYLE ================= */
   const cardStyle = {
     background: "white",
     padding: "15px",
@@ -77,28 +95,40 @@ function App() {
     >
       <h1 style={{ textAlign: "center" }}>Resume Analyzer 🚀</h1>
 
-      {/* FILE INPUT */}
-      <input
-        type="file"
-        accept=".pdf"
-        onChange={(e) => setFile(e.target.files[0])}
-      />
-      <br /><br />
+      {/* JOB DESCRIPTION */}
+      <div style = {{ marginTop: "20px"}}>
+        <h3> Job Description</h3>
 
-      <textarea
-        placeholder="Paste Job Description here..."
+        <textarea
+        placeholder="Paste Job description here"
         value={jobDescription}
         onChange={(e) => setJobDescription(e.target.value)}
         rows={6}
         style={{
           width: "100%",
+          height: "120px",
           padding: "10px",
           borderRadius: "8px",
           border: "1px solid #ccc",
-          fontFamily: "Arial",
+          marginBottom: "10px",
         }}
-      />
+        />
+        <p style={{ fontWeight: "hold" }}>
+           OR upload Job Description
+        </p>
+        
+        <input
+          type="file"
+          accept=".pdf"
+          onChange={(e) => setJdFile(e.target.files[0])}
+        />
 
+        {jdFile && (
+          <p style={{ fontSize: "14px" }}>
+            📎 JD File Selected: {jdFile.name}
+          </p>
+        )}
+      </div>
       <br />
       <br />
 
@@ -121,7 +151,7 @@ function App() {
 
       {file && <p>Selected: {file.name}</p>}
 
-      {/* AI THINKING MESSAGE */}
+      {/* LOADING MESSAGE */}
       {loading && (
         <div
           style={{
@@ -134,34 +164,31 @@ function App() {
         </div>
       )}
 
-      {/* RESULTS */}
+      {/* ================= CURRENT RESULT ================= */}
       {result && (
-        <div ref ={analysisRef} style={{ marginTop: "30px" }}>
+        <div ref={analysisRef} style={{ marginTop: "30px" }}>
           <h2>AI Analysis</h2>
+          
           {/* MATCH SCORE */}
           {result?.analysis?.match_score !== undefined && (
             <div
               style={{
-                background: "#ecfdf5",
-                padding: "15px",
+                background: "#eef2ff",
+                padding: "12px",
                 borderRadius: "10px",
                 marginBottom: "15px",
                 textAlign: "center",
-                border: "2px solid #10b981",
+                fontWeight: "bold",
+                fontSize: "18px",
               }}
             >
-              <h2 style={{ margin: 0, color: "#065f46" }}>
-                🎯 Match Score: {result.analysis.match_score}%
-              </h2>
+              🎯 Match Score: {result.analysis.match_score}%
             </div>
           )}
-
           {/* SUMMARY */}
           <div style={cardStyle}>
             <h3 style={{ color: "#2563eb" }}>🧠 Summary</h3>
-            <p>
-              {result?.analysis?.summary || "No summary available."}
-            </p>
+            <p>{result?.analysis?.summary || "No summary available."}</p>
           </div>
 
           {/* STRENGTHS */}
@@ -178,13 +205,19 @@ function App() {
             </ul>
           </div>
 
-          {/* MISSING SKILLS */}
+          {/* MISSING SKILLS (OBJECT FIX ✅) */}
           <div style={cardStyle}>
             <h3 style={{ color: "#dc2626" }}>⚠️ Missing Skills</h3>
             <ul>
               {result?.analysis?.missing_skills?.length > 0 ? (
                 result.analysis.missing_skills.map((item, index) => (
-                  <li key={index}>{item}</li>
+                  <li key={index}>
+                    <strong>{item.skill}</strong>
+                    <br />
+                    <span style={{ color: "gray", fontSize: "14px" }}>
+                      {item.reason}
+                    </span>
+                  </li>
                 ))
               ) : (
                 <p>No missing skills detected.</p>
@@ -192,9 +225,11 @@ function App() {
             </ul>
           </div>
 
-          {/* IMPROVEMENT SUGGESTIONS */}
+          {/* IMPROVEMENTS */}
           <div style={cardStyle}>
-            <h3 style={{ color: "#f59e0b" }}>💡 Improvement Suggestions</h3>
+            <h3 style={{ color: "#f59e0b" }}>
+              💡 Improvement Suggestions
+            </h3>
             <ul>
               {result?.analysis?.improvement_suggestions?.length > 0 ? (
                 result.analysis.improvement_suggestions.map(
@@ -209,50 +244,45 @@ function App() {
       )}
 
       {/* ================= HISTORY ================= */}
-{resumehistory.length > 0 && (
-  <div style={{ marginTop: "40px" }}>
-    <h2>📜 Previous Analyses</h2>
+      {resumeHistory.length > 0 && (
+        <div style={{ marginTop: "40px" }}>
+          <h2>📜 Previous Analyses</h2>
 
-    {resumehistory.map((item) => (
-      <div key={item._id} style={cardStyle}>
-        <h3>{item.filename}</h3>
+          {resumeHistory.map((item) => (
+            <div key={item._id} style={cardStyle}>
+              <h3>{item.filename}</h3>
 
-        <p>
-          <strong>Summary:</strong>{" "}
-          {item.analysis?.summary || "No summary"}
-        </p>
+              <p>
+                <strong>Summary:</strong>{" "}
+                {item.analysis?.summary || "No summary"}
+              </p>
 
-        <button
-          onClick={() => {
-            setResult(item);
+              <small style={{ color: "gray" }}>
+                {new Date(item.createdAt).toLocaleString()}
+              </small>
 
-            setTimeout(() => {
-              analysisRef.current?.scrollIntoView({
-                behavior: "smooth",
-                block: "start",
-              });
-            }, 100);
-          }}
-          style={{
-            marginTop: "10x",
-            padding: "6px 12px",
-            background: "#2563eb",
-            color: "white",
-            border: "none",
-            borderRadius: "6px",
-            cursor: "pointer"
-          }}
-        >
-          View Analysis
-        </button>
-        <small style={{ color: "gray" }}>
-          {new Date(item.createdAt).toLocaleString()}
-        </small>
-      </div>
-    ))}
-  </div>
-)}
+              <br />
+              <br />
 
+              <button
+                onClick={() =>
+                  setResult({ analysis: item.analysis })
+                }
+                style={{
+                  padding: "6px 12px",
+                  background: "#111827",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  cursor: "pointer",
+                }}
+              >
+                View Analysis
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
