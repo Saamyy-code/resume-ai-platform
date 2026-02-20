@@ -13,7 +13,7 @@ function App() {
   const fetchHistory = async () => {
     try {
       const response = await fetch(
-        process.env.React_APP_API_URL
+        '&{process.env.REACT_APP_API_URL}/api/resume/history'
       );
       const data = await response.json();
       setResumeHistory(data);
@@ -44,14 +44,14 @@ function App() {
     formData.append("jobDescription", jobDescription);
 
     if(jdFile){
-      formData.append("jdFile, jdFile");
+      formData.append("jdFile", jdFile);
     }
 
     try {
       setLoading(true);
 
       const response = await fetch(
-        process.env.React_APP_API_URL,
+        process.env.REACT_APP_API_URL,
         {
           method: "POST",
           body: formData,
