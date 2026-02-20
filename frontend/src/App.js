@@ -13,7 +13,7 @@ function App() {
   const fetchHistory = async () => {
     try {
       const response = await fetch(
-        '&{process.env.REACT_APP_API_URL}/api/resume/history'
+        `${process.env.REACT_APP_API_URL}/api/resumes/history`
       );
       const data = await response.json();
       setResumeHistory(data);
@@ -51,18 +51,25 @@ function App() {
       setLoading(true);
 
       const response = await fetch(
-        process.env.REACT_APP_API_URL,
-        {
-          method: "POST",
-          body: formData,
-        }
-      );
+      `${process.env.REACT_APP_API_URL}/api/resumes/upload`,
+      {
+        method: "POST",
+        body: formData,
+      }
+    );
 
-      const data = await response.json();
+    console.log("STATUS:", response.status);
 
-      setResult(data);
+    const text = await response.text();
+    console.log("SERVER RESPONSE:", text);
 
-      // refresh history after upload
+    if (!response.ok) {
+      throw new Error(text);
+    }
+
+    const data = JSON.parse(text);
+    setResult(data);
+          // refresh history after upload
       fetchHistory();
     } catch (error) {
       console.error(error);
@@ -126,7 +133,7 @@ function App() {
           marginBottom: "10px",
         }}
         />
-        <p style={{ fontWeight: "hold" }}>
+        <p style={{ fontWeight: "bold" }}>
            OR upload Job Description
         </p>
         
