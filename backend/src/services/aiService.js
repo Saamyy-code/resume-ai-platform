@@ -27,7 +27,12 @@ Return ONLY valid JSON in this format:
   "match_score": number,
   "summary": "short professional summary",
   "strengths": ["point1","point2"],
-  "missing_skills": ["skill1","skill2"],
+  "missing_skills": [
+    {
+      "skill" : "skill name",
+      "reason" : "why this skill is important for the job"
+        }
+      ]
   "improvement_suggestions": ["suggestion1","suggestion2"]
 }
 
@@ -35,6 +40,7 @@ Rules:
 - match_score must be between 0 and 100
 - Compare resume skills with job description
 - Identify missing skills required by the job
+- Explain briefly why each missing skill is important
 - Give actionable suggestions
 - Return ONLY JSON (no explanations)
 
