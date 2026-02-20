@@ -13,7 +13,7 @@ function App() {
   const fetchHistory = async () => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/resumes/history"
+        process.env.React_APP_API_URL
       );
       const data = await response.json();
       setResumeHistory(data);
@@ -51,7 +51,7 @@ function App() {
       setLoading(true);
 
       const response = await fetch(
-        "http://localhost:5000/api/resumes/upload",
+        process.env.React_APP_API_URL,
         {
           method: "POST",
           body: formData,
@@ -94,6 +94,19 @@ function App() {
       }}
     >
       <h1 style={{ textAlign: "center" }}>Resume Analyzer 🚀</h1>
+
+      <h3>Upload Resume</h3>
+      <input
+        type="file"
+        accept=".pdf"
+        onChange={(e) => setFile(e.target.files[0])}
+      />
+
+      {file && (
+        <p style={{ color : "gray"}}>
+          Selected Resume : {file.name}
+        </p>
+      )}
 
       {/* JOB DESCRIPTION */}
       <div style = {{ marginTop: "20px"}}>
