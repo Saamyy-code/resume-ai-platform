@@ -16,26 +16,31 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 router.post("/upload", upload.fields([{name: "resume", maxCount: 1 },
-                                      {name: "jdFile", maxCount: 1 }
-            ]), async (req, res) => {
+                                      {name: "jdFile", maxCount: 1 }]), 
+  async (req, res) => {
   try {
     // files from multer
     const resumeFile = req.files?.resume?.[0];
     const jdFile = req.files?.jdFile?.[0];
+
+    if(!resumeFile) {
+      return res.status(400).json({ error: "Resume required" });
+    }
     const jobDescription = req.body.jobDescription || "";
+
     // Extract text from PDF
-    const text = await extractTextFromPDF(req.file.path);
+    const text = await extractTextFromPDF(resumeFile.path);
 
     // Save raw resume to PostgreSQL
     const result = await pool.query(
       `INSERT INTO resumes (original_file_name, extracted_text)
        VALUES ($1, $2)
        RETURNING id`,
-      [req.file.originalname, text]
+      [resumeFile.originalname, text]
     );
 
     let analysis;
-    let savedResume = null; // ⭐ important fix
+    let savedResume = null; 
 
     try {
       analysis = await analyzeResume(text, jobDescription);
@@ -44,7 +49,7 @@ router.post("/upload", upload.fields([{name: "resume", maxCount: 1 },
       const Resume = require("../models/Resume");
 
       savedResume = await Resume.create({
-        filename: req.file.originalname,
+        filename: resumeFile.originalname,
         analysis: analysis,
       });
 
