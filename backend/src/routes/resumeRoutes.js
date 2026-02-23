@@ -15,8 +15,13 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-router.post("/upload", upload.single("resume"), async (req, res) => {
+router.post("/upload", upload.fields([{name: "resume", maxCount: 1 },
+                                      {name: "jdFile", maxCount: 1 }
+            ]), async (req, res) => {
   try {
+    // files from multer
+    const resumeFile = req.files?.resume?.[0];
+    const jdFile = req.files?.jdFile?.[0];
     const jobDescription = req.body.jobDescription || "";
     // Extract text from PDF
     const text = await extractTextFromPDF(req.file.path);
