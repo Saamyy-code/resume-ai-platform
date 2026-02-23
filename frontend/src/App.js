@@ -100,7 +100,7 @@ function App() {
         boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
       }}
     >
-      <h1 style={{ textAlign: "center" }}>Resume Analyzer 🚀</h1>
+      <h1 style={{ textAlign: "center" }}>Resume Analyzer </h1>
 
       <h3>Upload Resume</h3>
       <input
@@ -166,7 +166,7 @@ function App() {
           fontWeight: "bold",
         }}
       >
-        {loading ? "⏳ Analyzing Resume..." : "Upload Resume"}
+        {loading ? " Analyzing Resume..." : "Upload Resume"}
       </button>
 
       {file && <p>Selected: {file.name}</p>}
@@ -180,7 +180,7 @@ function App() {
             fontWeight: "bold",
           }}
         >
-          🤖 AI is analyzing your resume...
+           AI is analyzing your resume...
         </div>
       )}
 
@@ -207,13 +207,13 @@ function App() {
           )}
           {/* SUMMARY */}
           <div style={cardStyle}>
-            <h3 style={{ color: "#2563eb" }}>🧠 Summary</h3>
+            <h3 style={{ color: "#2563eb" }}> Summary</h3>
             <p>{result?.analysis?.summary || "No summary available."}</p>
           </div>
 
           {/* STRENGTHS */}
           <div style={cardStyle}>
-            <h3 style={{ color: "#16a34a" }}>✅ Strengths</h3>
+            <h3 style={{ color: "#16a34a" }}> Strengths</h3>
             <ul>
               {result?.analysis?.strengths?.length > 0 ? (
                 result.analysis.strengths.map((item, index) => (
@@ -227,7 +227,7 @@ function App() {
 
           {/* MISSING SKILLS (OBJECT FIX ✅) */}
           <div style={cardStyle}>
-            <h3 style={{ color: "#dc2626" }}>⚠️ Missing Skills</h3>
+            <h3 style={{ color: "#dc2626" }}> Missing Skills</h3>
             <ul>
               {result?.analysis?.missing_skills?.length > 0 ? (
                 result.analysis.missing_skills.map((item, index) => (
@@ -266,7 +266,7 @@ function App() {
       {/* ================= HISTORY ================= */}
       {resumeHistory.length > 0 && (
         <div style={{ marginTop: "40px" }}>
-          <h2>📜 Previous Analyses</h2>
+          <h2> Previous Analyses</h2>
 
           {resumeHistory.map((item) => (
             <div key={item._id} style={cardStyle}>
